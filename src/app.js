@@ -1,18 +1,13 @@
 const express = require('express');
 const path = require('path');
 const store = require('./store');
+const { isValidDate } = require('./validate');
+const exportRoutes = require('./export');
 const { version } = require('../package.json');
 
 const app = express();
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '..', 'public')));
-
-// "2026-09-05" and nothing else (rejects 2026-13-45, 2026-9-5, timestamps, ...)
-function isValidDate(s) {
-  if (typeof s !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(s)) return false;
-  const d = new Date(s + 'T00:00:00Z');
-  return !Number.isNaN(d.getTime()) && d.toISOString().slice(0, 10) === s;
-}
 
 function isValidMonth(s) {
   return typeof s === 'string' && /^\d{4}-(0[1-9]|1[0-2])$/.test(s);
@@ -66,6 +61,8 @@ app.post('/expenses', (req, res) => {
   });
   res.status(201).json(row);
 });
+
+app.use(exportRoutes);
 
 // --- routes end ---
 
